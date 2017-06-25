@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<title>Remittance</title>
+<meta charset="utf-8">
+<link 
+href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+rel="stylesheet" 
+integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+crossorigin="anonymous">
+<link href="styles/remittance.css" rel="stylesheet">
+<link href="styles/bootstrap-duration-picker.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Jura:700" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Oswald:400,500" rel="stylesheet">
+</head>
+<body>
+<script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous">
+</script>
+<script 
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" 
+    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" 
+    crossorigin="anonymous">
+</script>
+<script src="https://use.fontawesome.com/f33b7185f4.js"></script>    
+<script src="js/app.js"></script>
+</body>
+</html>
+<div class="container">
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header ">
+                <i class="fa fa-cubes fa-3x blocks"></i>
+                <a class="navbar-brand title" href="#">Remittance</a>
+            </div>
+            <ul class="nav navbar-nav" data-bind="foreach: menus">
+                <li class="menu" data-bind="css: { selected: $data == $root.chosenMenu()}, click: $root.goToMenuItem"><a href="#" data-bind="text: $data"></a></li>
+            </ul>
+            <button class="btn btn-danger navbar-btn small emergency" data-bind="click: toggleActive, visible: stopped() == false">Emergency Contract Stop</button>
+            <button type="button" class="btn btn-success navbar-btn small reactivate" data-bind="click: toggleActive, visible: stopped() == true">Reactivate Contract</button>
+            <button type="button" class="btn btn-warning navbar-btn small" data-bind="click: recoverContractBalance, visible: stopped() == true">Recover Funds</button>
+            <div class="pull-right settings" style><i class="fa fa-cog fa-2x" data-toggle="modal" data-target="#mdlSettings"></i></div>
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="alert alert-danger alert-dismissable" data-bind="visible: errorMsg().toString().length > 0">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+            <strong>Error</strong> <h5 data-bind="text: errorMsg"></h5>
+        </div>        
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="panel panel-default panel-style">
+                <div class="panel-body">
+                    <h5 class="unit">Contract Balance</h5>
+                    <div style="float:left;">
+                        <h1 class="contract-balance" data-bind="text: contractBalance"></h1>
+                    </div>
+                    <div style="float:left;">
+                        <h1 class="unit-big">&nbsp;ETH</h1>
+                    </div>
+                </div>
+            </div>            
+        </div>
+        <div class="col-sm-4">
+            <div class="panel panel-default panel-style">
+                <div class="panel-body">
+                    <h5 class="unit">Owner Fees</h5>
+                    <div style="float:left;">
+                        <h1 class="contract-balance" data-bind="text: collectedFees"></h1>
+                    </div>
+                    <div style="float:left;">
+                        <h1 class="unit-big">&nbsp;Wei</h1>
+                    </div>                  
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="panel panel-default panel-style">
+                <div class="panel-body active-status-panel">
+                    <h5 class="unit">Contract Status</h5>
+                    <h1 data-bind="text: stopped() == false ? 'ACTIVE' : 'STOPPED', css: { 'active-status': stopped() == false, 'stopped-status': stopped() == true}"></h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: chosenMenu() == 'Create Lockbox'">
+        <div>
+            <fieldset>
+                <div class="form-group">
+                    <div class="input-group margin-bottom-lg margin-form">
+                        <span class="input-group-addon">                
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <input class="form-control input-lg" type="text" placeholder="Lockbox amount" data-bind="textInput: lockBoxAmount">
+                    </div>
+
+                    <div class="input-group margin-bottom-lg margin-form">
+                        <span class="input-group-addon">
+                            <i class="fa fa-user-circle"></i>
+                        </span>
+                        <select class="form-control input-lg" data-bind="options: accounts, optionsCaption: 'Sender', value: lockBoxSender"></select>
+                    </div>   
+
+                    <div class="input-group margin-bottom-lg margin-form">
+                        <span class="input-group-addon">
+                            <i class="fa fa-user-circle-o"></i>
+                        </span>
+                        <select class="form-control input-lg" data-bind="options: accounts, optionsCaption: 'Beneficiary', value:lockBoxBeneficiary"></select>
+                    </div>  
+
+                    <div class="input-group margin-bottom-lg">
+                        <span class="input-group-addon">                
+                            <i class="fa fa-lock"></i>
+                        </span>
+                        <input class="form-control input-lg" 
+                            type="password" 
+                            placeholder="Password 1" 
+                            data-bind="textInput: lockBoxPassword1">
+                    </div>      
+
+                    <h5 class="hash" data-bind="text: lockBoxPassHash1, visible: lockBoxPassword1().toString().length > 0"></h5>
+                    <h5 class="margin-h5"> </h5>
+
+                    <div class="input-group margin-bottom-lg">
+                        <span class="input-group-addon">                
+                            <i class="fa fa-lock"></i>
+                        </span>
+                        <input class="form-control input-lg" type="password" placeholder="Password 2" data-bind="textInput: lockBoxPassword2">
+                    </div>     
+
+                    <h5 class="margin-h5 hash" data-bind="text: lockBoxPassHash2, visible: lockBoxPassword2().toString().length > 0"></h5>                          
+                    
+                    <div class="create-btn">
+                        <button type="button" class="btn btn-lg" data-bind="click: createLockBox">Create</button>
+                    </div>                    
+                </div>
+            </fieldset>            
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: chosenMenu() == 'Claim Lockbox'">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Creator</th>
+                <th>Beneficiary</th>
+                <th>Amount <span class="unit">(Wei)</span></th>
+                <th>Claim Deadline</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody data-bind="foreach: lockBoxData">
+            <tr>
+                <td>
+                    <h4><span class="label sender-address" data-bind="text: creator"></span></h4>                                 
+                </td>
+                <td>
+                    <h4><span class="label default-address" data-bind="text: beneficiary"></span></h4>               
+                </td>
+                <td data-bind="text: amount"></td>
+                <td class="small" data-bind="text: new Date((Number(creationTime()) + Number($parent.claimDeadline())) * 1000).toString().slice(0,28)"></td>                
+                <td>
+                    <button type="button" class="btn" data-bind="click: $root.setCurrentBoxToClaim, visible: new Date((Number(creationTime()) + Number($parent.claimDeadline())) * 1000).getTime() > new Date().getTime()" data-toggle="modal" data-target="#mdlClaimLockBox">Claim</button>  
+                    <button type="button" class="btn sender-reclaim" data-bind="click: $parent.reclaimLockBox, visible: new Date((Number(creationTime()) + Number($parent.claimDeadline())) * 1000).getTime() < new Date().getTime()">Sender reclaim</button>       	
+                </td>
+            </tr>
+            </tbody>
+        </table>      
+    </div>
+
+    <div class="row" data-bind="visible: chosenMenu() == 'Balances'">
+        <table class="table table-condensed table-hover">
+            <thead>
+            <tr>
+                <th>Address</th>
+                <th>Contract Balance <span class="unit">(Wei)</span></th>
+                <th>Account Balance <span class="unit">(ETH)</span></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody data-bind="foreach: accountData">
+            <tr data-bind="css: {'updated-account': $root.updatedAccount() == address()}">
+                <td>
+                    <h4><span class="label" data-bind="text: address, css: { 'label-danger': $root.updatedAccount() == address(), 'default-address': $root.updatedAccount() != address(), }"></span></h4>
+                </td>
+                <td data-bind="text: contractBalance"></td>
+                <td data-bind="text: accountBalanceETH"></td>
+                <td>
+                    <button type="button" class="btn" data-bind="click: $root.withdrawCurrentAccount">Withdraw</button>                
+                </td>
+            </tr>
+            </tbody>
+        </table>        
+    </div>    
+
+    <!-- Modal Claim Lockbox-->
+    <div class="modal fade" id="mdlClaimLockBox" role="dialog">
+        <div class="modal-dialog">
+        
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Claim Lockbox Funds</h4>
+            </div>
+            <div class="modal-body">
+                <h2 class="claim-amount" data-bind="text: currentAmount">
+                </h2>
+                <table cellspacing="20">
+                    <tr>
+                        <td>
+                            <i class="fa fa-user-circle"></i>
+                        </td>
+                        <td>
+                            Sender
+                        </td>
+                        <td>
+                            <h4 data-bind="text: currentSender"></h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="fa fa-user-circle-o"></i>
+                        </td>
+                        <td>
+                            Beneficiary
+                        </td>
+                        <td>
+                            <h4 data-bind="text: currentBeneficiary"></h4>
+                        </td>
+                    </tr>                    
+                </table>
+                <h5 class="margin-h5"> </h5>
+                <fieldset>
+                    <div class="form-group">
+                        <div class="input-group margin-bottom-lg mar">
+                            <span class="input-group-addon">                
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input 
+                                class="form-control input-lg" 
+                                type="password" 
+                                placeholder="Password 1" 
+                                data-bind="textInput: lockBoxPassword1">
+                        </div>      
+
+                        <h5 class="margin-h5"> </h5>
+
+                        <div class="input-group margin-bottom-lg">
+                            <span class="input-group-addon">                
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input 
+                                class="form-control input-lg" 
+                                type="password" 
+                                placeholder="Password 2" 
+                                data-bind="textInput: lockBoxPassword2">
+                        </div>                         
+                    </div>
+                </fieldset> 
+            </div>
+            <div class="modal-footer">
+            <button 
+                type="button" 
+                class="btn" 
+                data-bind="click: claimLockBox">Go</button>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+
+    <!-- Modal Settings -->
+    <div id="mdlSettings" class="modal fade" style="margin-top:100px;" role="dialog">
+    <div class="modal-dialog" style="width: 20%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Contract Settings</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-success" data-bind="visible: settingSuccessMsg().toString().length > 0">
+                    <h5 data-bind="text: '&#x2714; ' + settingSuccessMsg()"></h5>
+                </div>
+                <div class="form-group">
+                    <label for="deadline">Claim deadline duration:</label>
+                    <input type="text" class="form-control" id="deadlineDuration" data-bind="value: claimDeadline" name="deadline">
+                </div>
+                <div class="pull-right">
+                    <button class="btn" data-bind="click: setDurationDeadline">Set Deadline Duration</button>
+                </div>
+                <h5 style="margin-bottom:50px;"> </h5>
+                <div class="form-group">
+                    <label for="fee">Owner fee:</label>
+                    <input type="text" class="form-control" id="ownerFee" data-bind="value: ownerFee" placeholder="Enter fee" name="fee">
+                </div>
+                <div class="pull-right">
+                    <button class="btn" data-bind="click: setOwnerFee">Set Fee</button>
+                </div>
+                <h5 style="margin-bottom:50px;"> </h5>        
+            </div>
+        </div>
+
+    </div>
+    </div>    
+
+    <!-- Modal Loading -->
+    <div class="modal fade" id="mdlLoading" style="margin-top:200px;" role="dialog">
+        <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h4 class="modal-title" data-bind="text: loadMsg"></h4>
+            </div>
+            <div class="modal-body">
+                <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-danger"></i>
+                <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-danger"></i>
+                <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-danger"></i>
+                <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-danger"></i>                
+            </div>
+        </div>
+        </div>
+    </div>    
+</div>

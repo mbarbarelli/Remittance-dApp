@@ -1,0 +1,133 @@
+body {
+    background-color: #fcfcf7;
+}
+
+.panel-style {
+    background-color: #FFFFFF;
+}
+
+.title {
+    font-family: 'Roboto Condensed';
+    font-size: 40px;
+    font-weight: bold;
+    padding-left: 25px; 
+    padding-right: 25px;
+    padding-top: 15px;
+}
+
+.small {
+    font-family: 'Roboto Condensed';
+    font-size:13px;
+}
+
+.margin-form {
+    margin-bottom: 10px;
+}
+
+.margin-h5 {
+    margin-bottom: 15px;
+}
+
+.hash {
+    font-family: 'Jura', sans-serif;
+}
+
+.menu {
+    font-family: 'Roboto Condensed';
+    font-size: 16px;
+}
+
+.blocks {
+    padding-left: 10px;
+    padding-right: 10px; 
+    padding-top: 5px;
+    color:#4d5259;
+    float:left;
+}
+
+.emergency {
+    margin-left: 40px;
+}
+
+.reactivate {
+    margin-left: 70px;
+}
+
+.selected {
+    background-color: #4d5259;
+}
+
+.create-btn {
+    text-align: right; 
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.unit {
+    color:#a2a6ad;
+}
+
+.claim-amount {
+    font-family: 'Oswald', sans-serif;
+}
+
+.updated-account {
+    background-color: #f4d7e2
+}
+
+.default-address {
+    background-color:#dbdbdb;
+    color:#7c7c7c;
+}
+
+.sender-address {
+    color:#dbdbdb;
+    background-color:#7c7c7c;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+.table > tbody > tr > td {
+     vertical-align: middle;
+}
+
+.settings {
+    padding-top: 12px;
+    color: #7c7c7c;
+    cursor: pointer;
+}
+
+.sender-reclaim {
+    background-color: #ffe8e8;
+    font-size: 13px;
+}
+
+.active-status {
+    font-family: 'Oswald', sans-serif;
+    color: #4d7c30;
+    padding-top: 8px;
+}
+
+.active-status-panel {
+    padding-bottom: 18px;
+}
+
+.stopped-status {
+    font-family: 'Oswald', sans-serif;
+    color: #961919; 
+    padding-top: 8px;
+}
+
+.contract-balance {
+    font-family: 'Oswald', sans-serif;
+    color: black; 
+}
+
+.unit-big {
+    font-family: 'Oswald', sans-serif;
+    color:#a2a6ad;
+}
