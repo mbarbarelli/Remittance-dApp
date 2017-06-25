@@ -1,6 +1,5 @@
 # Remittance ÐAPP 
 
-![Screenshot](readme.png)
 
 [![Remittance YouTube Video](readme.png)](https://youtu.be/-ZW1Wp2MhnM "Remittance ÐAPP Video")
 
