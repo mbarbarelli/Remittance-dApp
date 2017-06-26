@@ -514,7 +514,6 @@ const bindData = () => {
             self.errorMsg("");
             self.settingSuccessMsg("");
         });              
-
     }
     ko.applyBindings(new ViewModel());
     initDurationPicker(); 
