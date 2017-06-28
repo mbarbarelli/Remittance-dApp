@@ -290,11 +290,7 @@ contract Remittance is Owned {
     {
         if(owner.send(this.balance))
         {
-            totalAmountFees = 0;            
-            for (uint x = 0; x < lockBoxIndex.boxIndex.length; x++) 
-            {
-                lockBox.boxes[lockBoxIndex.boxIndex[x]].active = false;
-            }            
+            totalAmountFees = 0;                  
             return true;
         }
         throw;            
