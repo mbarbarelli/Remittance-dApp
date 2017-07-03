@@ -142,20 +142,21 @@ const getAccountData = () => {
 }
 
 const getLockBox = (index) => {
-    var beneficiary; 
-    return rem.getReceiverAtIndex.call(index)
-        .then(receiver => {
-            beneficiary = receiver; 
-            return rem.getLockBox.call(beneficiary);
+    var lockBoxKey; 
+    return rem.getLockBoxKeyAtIndex.call(index)
+        .then(key => {
+            lockBoxKey = key; 
+            return rem.getLockBox.call(lockBoxKey);
         })
         .then(lockBox => {
-            window.lockBoxes.push({
-                beneficiary: beneficiary, 
+            window.lockBoxes.push({                
                 creator: lockBox[0].valueOf(), 
-                amount: lockBox[1].valueOf(),
-                creationTime: lockBox[2].valueOf(),
-                active: lockBox[3].valueOf(), 
-                index: lockBox[4].valueOf()
+                beneficiary: lockBox[1].valueOf(),  
+                amount: lockBox[2].valueOf(),
+                creationTime: lockBox[3].valueOf(),
+                active: lockBox[4].valueOf(), 
+                index: lockBox[5].valueOf(),
+                lockBoxKey: lockBoxKey
             });
         });
 }
@@ -200,6 +201,7 @@ const bindData = () => {
         this.creationTime = ko.observable(Number(data.creationTime)); 
         this.active = ko.observable(data.active); 
         this.index = ko.observable(data.index); 
+        this.lockBoxKey = ko.observable(data.lockBoxKey);
     }
 
     function AccountData(data){
@@ -250,12 +252,14 @@ const bindData = () => {
         self.currentBeneficiary = ko.observable();
         self.currentAmount = ko.observable();
         self.currentSender = ko.observable();
+        self.currentLockBoxKey = ko.observable();
 
         self.setCurrentBoxToClaim = (item) => {
             self.clearForm();
             self.currentBeneficiary(item.beneficiary());
             self.currentSender(item.creator());
             self.currentAmount("ETH: " + web3.fromWei(item.amount(), "ether"));
+            self.currentLockBoxKey(item.lockBoxKey());
         }        
     
         self.goToMenuItem = (menu) => { 
@@ -301,7 +305,7 @@ const bindData = () => {
             $('#mdlLoading').modal('show');  
 
             return rem.claimFunds.sendTransaction(self.lockBoxPassword1().toString(), self.lockBoxPassword2().toString(), 
-                { from: self.currentBeneficiary(), gas:300000 })
+                self.currentLockBoxKey(), { from: self.currentBeneficiary(), gas:300000 })
                 .then(txHash => {
                     return web3.eth.getTransactionReceiptMined(txHash);
                 })
@@ -329,7 +333,7 @@ const bindData = () => {
             self.loadMsg("Reclaiming lockbox funds...")
             $('#mdlLoading').modal('show');         
 
-            return rem.reclaimFunds.sendTransaction(item.beneficiary(), { from: item.creator(), gas: 300000})    
+            return rem.reclaimFunds.sendTransaction(item.lockBoxKey(), { from: item.creator(), gas: 300000})    
                 .then(txnHash => {
                     return web3.eth.getTransactionReceiptMined(txnHash);
                 })
@@ -372,6 +376,8 @@ const bindData = () => {
                 .then(() => {
                     $('#mdlLoading').modal('hide'); 
                     self.contractBalance(formatBalance(window.contractBalance));
+                    console.log("window.contractBalance:" + window.contractBalance);
+                    console.log("self.contractBalance: " + self.contractBalance());
                     self.collectedFees(window.collectedFees);
                     self.lockBoxData(self.mapLockBoxes(window.lockBoxes.filter((i) => { return i.active == true; }))); 
                     self.accountData(self.mapAccountData(window.accountData));  

@@ -19,25 +19,25 @@ contract Remittance is Owned {
     uint public deadlineLimit = 2 weeks;
     bool public stopped = false; 
     
-    event LogLockBoxCreated(address indexed receiver, uint indexed amount, bool result);
+    event LogLockBoxCreated(address indexed receiver, uint indexed amount, bytes32 indexed lockBoxKey, bool result);
     event LogFundsUnlocked(address indexed account, uint indexed amount, bool indexed result);
     event LogWithdrawal(address indexed payee, uint indexed amount, bool indexed result);
     event LogDeposit(address indexed account, uint indexed amount);
     
-    modifier boxExists(address _receiver) 
+    modifier boxExists(bytes32 _lockBoxKey) 
     {
-        if(!Data.boxExists(lockBox, lockBoxIndex, _receiver)) throw; 
+        if(!Data.boxExists(lockBox, lockBoxIndex, _lockBoxKey)) throw; 
         _;
     }
 
-    modifier authenticate(string _password1, string _password2)
+    modifier authenticate(string _password1, string _password2, bytes32 lockBoxKey)
     {
 
         if(!Util.authenticate(
             _password1, 
             _password2, 
-            lockBox.boxes[msg.sender].password1, 
-            lockBox.boxes[msg.sender].password2)) throw;    
+            lockBox.boxes[lockBoxKey].hash1, 
+            lockBox.boxes[lockBoxKey].hash2)) throw;    
              _;                
     }
 
@@ -89,33 +89,35 @@ contract Remittance is Owned {
 
         if(Data.insert(lockBox, lockBoxIndex, _receiver, msg.sender, amount, _password1, _password2))
         {
-            LogLockBoxCreated(_receiver, amount, true);
+            LogLockBoxCreated(_receiver, amount, getKey(_password1, _password2), true);
             totalAmountInHolding += msg.value;
             depositFee(ownerFee);
             return true;
         } 
         else 
         {
-            LogLockBoxCreated(_receiver, amount, false);
+            LogLockBoxCreated(_receiver, amount, 0x0, false);
             throw;
         }
     }    
     
-    function getLockBox(address _receiver) 
+    function getLockBox(bytes32 _lockBoxKey) 
         public 
         constant
         returns (address creator, 
+                 address receiver,
                  uint amount, 
                  uint creationTime,
                  bool active, 
                  uint index) 
     {
         return (
-        lockBox.boxes[_receiver].creator, 
-        lockBox.boxes[_receiver].amount, 
-        lockBox.boxes[_receiver].creationTime,
-        lockBox.boxes[_receiver].active, 
-        lockBox.boxes[_receiver].index
+        lockBox.boxes[_lockBoxKey].creator, 
+        lockBox.boxes[_lockBoxKey].receiver, 
+        lockBox.boxes[_lockBoxKey].amount, 
+        lockBox.boxes[_lockBoxKey].creationTime,
+        lockBox.boxes[_lockBoxKey].active, 
+        lockBox.boxes[_lockBoxKey].index
         );
     }   
 
@@ -127,16 +129,16 @@ contract Remittance is Owned {
         return lockBoxIndex.boxIndex.length; 
     }
 
-    function getReceiverAtIndex(uint index)
+    function getLockBoxKeyAtIndex(uint index)
         public 
         constant
-        returns(address receiver)
+        returns(bytes32 lockBoxKey)
     {
         return lockBoxIndex.boxIndex[index];
     }
 
 
-    function unlockFunds(address _boxOwner, address _beneficiary) 
+    function unlockFunds(bytes32 _lockBoxKey, address _beneficiary) 
         private
         returns (bool)
     {
@@ -145,9 +147,9 @@ contract Remittance is Owned {
             locked = true; 
             uint amtToDeposit;
 
-            amtToDeposit = lockBox.boxes[_boxOwner].amount; 
-            lockBox.boxes[_boxOwner].amount = 0; 
-            lockBox.boxes[_boxOwner].active = false; 
+            amtToDeposit = lockBox.boxes[_lockBoxKey].amount; 
+            lockBox.boxes[_lockBoxKey].amount = 0; 
+            lockBox.boxes[_lockBoxKey].active = false; 
             totalAmountInHolding -= amtToDeposit;
             deposit(_beneficiary, amtToDeposit); 
                      
@@ -160,26 +162,26 @@ contract Remittance is Owned {
         throw; 
     }
 
-    function claimFunds(string password1, string password2)      
-        authenticate(password1, password2)     
-        boxExists(msg.sender)
-        onlyBeforeDeadline(lockBox.boxes[msg.sender].creationTime)     
+    function claimFunds(string password1, string password2, bytes32 lockBoxKey)      
+        onlyBy(lockBox.boxes[lockBoxKey].receiver)
+        authenticate(password1, password2, lockBoxKey)     
+        boxExists(lockBoxKey)
+        onlyBeforeDeadline(lockBox.boxes[lockBoxKey].creationTime)     
         stopInEmergency     
         public
         returns (bool)
     {
-        return unlockFunds(msg.sender, msg.sender);
+        return unlockFunds(lockBoxKey, msg.sender);
     }
 
-    function reclaimFunds(address _receiver) 
-        boxExists(_receiver)
-        onlyBy(lockBox.boxes[_receiver].creator)
-        onlyAfterDeadline(lockBox.boxes[_receiver].creationTime)
+    function reclaimFunds(bytes32 lockBoxKey) 
+        boxExists(lockBoxKey)
+        onlyAfterDeadline(lockBox.boxes[lockBoxKey].creationTime)
         stopInEmergency
         public
         returns (bool)
     {
-        return unlockFunds(_receiver, msg.sender);
+        return unlockFunds(lockBoxKey, msg.sender);
     }
     
     function getBalance(address account) 
@@ -290,11 +292,19 @@ contract Remittance is Owned {
     {
         if(owner.send(this.balance))
         {
-            totalAmountFees = 0;                  
+            totalAmountFees = 0;                   
             return true;
         }
         throw;            
     }        
+
+    function getKey(bytes32 _hash1, bytes32 _hash2) 
+        public 
+        constant 
+        returns (bytes32)
+    {
+        return Util.createKey(_hash1, _hash2);
+    }
 
     function killMe() 
         fromOwner

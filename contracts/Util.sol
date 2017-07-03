@@ -8,4 +8,12 @@ library Util{
 		}
 		return false; 
 	}
+
+	function createKey(bytes32 hash1, bytes32 hash2) 
+			public 
+			constant 
+			returns (bytes32)
+	{
+		return keccak256(hash1, hash2);
+	}
 }
