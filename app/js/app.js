@@ -376,8 +376,6 @@ const bindData = () => {
                 .then(() => {
                     $('#mdlLoading').modal('hide'); 
                     self.contractBalance(formatBalance(window.contractBalance));
-                    console.log("window.contractBalance:" + window.contractBalance);
-                    console.log("self.contractBalance: " + self.contractBalance());
                     self.collectedFees(window.collectedFees);
                     self.lockBoxData(self.mapLockBoxes(window.lockBoxes.filter((i) => { return i.active == true; }))); 
                     self.accountData(self.mapAccountData(window.accountData));  
@@ -520,6 +518,7 @@ const bindData = () => {
             self.errorMsg("");
             self.settingSuccessMsg("");
         });              
+
     }
     ko.applyBindings(new ViewModel());
     initDurationPicker(); 
