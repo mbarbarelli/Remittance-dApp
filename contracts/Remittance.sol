@@ -49,13 +49,13 @@ contract Remittance is Owned {
 
     modifier onlyAfterDeadline(uint _creationTime)
     {
-        if(now <= _creationTime + deadline) throw;
+        if(now < _creationTime + deadline) throw;
         _;
     }
 
     modifier onlyBeforeDeadline(uint _creationTime)
     {
-        if(now >= (_creationTime + deadline)) throw;
+        if(now > (_creationTime + deadline)) throw;
         _;
     }    
 
