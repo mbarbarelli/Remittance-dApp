@@ -145,7 +145,7 @@ crossorigin="anonymous">
         </div>
     </div>
 
-    <div class="row" data-bind="visible: chosenMenu() == 'Claim Lockbox' && contractBalance() > 0">
+    <div class="row" data-bind="visible: chosenMenu() == 'Claim Lockbox' && !stopped()">
         <table class="table">
             <thead>
             <tr>
