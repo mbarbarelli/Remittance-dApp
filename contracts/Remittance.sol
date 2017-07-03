@@ -100,7 +100,7 @@ contract Remittance is Owned {
             throw;
         }
     }    
-    
+  
     function getLockBox(bytes32 _lockBoxKey) 
         public 
         constant
@@ -111,13 +111,15 @@ contract Remittance is Owned {
                  bool active, 
                  uint index) 
     {
+        Data.LockBox memory box; 
+        box = lockBox.boxes[_lockBoxKey];
         return (
-        lockBox.boxes[_lockBoxKey].creator, 
-        lockBox.boxes[_lockBoxKey].receiver, 
-        lockBox.boxes[_lockBoxKey].amount, 
-        lockBox.boxes[_lockBoxKey].creationTime,
-        lockBox.boxes[_lockBoxKey].active, 
-        lockBox.boxes[_lockBoxKey].index
+        box.creator, 
+        box.receiver, 
+        box.amount, 
+        box.creationTime,
+        box.active, 
+        box.index
         );
     }   
 
