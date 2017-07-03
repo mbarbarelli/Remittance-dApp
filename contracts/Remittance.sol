@@ -315,7 +315,8 @@ contract Remittance is Owned {
         selfdestruct(owner);      
     }
 
-    function () {
+    function () 
+    {
         throw;
     }    
 }
